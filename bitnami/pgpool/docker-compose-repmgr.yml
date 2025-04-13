@@ -1,0 +1,132 @@
+version: '3.8'
+services:
+##################
+# Postgre Master #
+##################
+  pg-0:
+    image: docker.io/bitnami/postgresql-repmgr:latest
+    container_name: pg-0
+    restart: always
+    ports:
+      - 35433:5432
+    volumes:
+      - pg_0_data:/bitnami/postgresql
+    environment:
+      - POSTGRESQL_POSTGRES_PASSWORD=adminpassword
+      - POSTGRESQL_USERNAME=customuser
+      - POSTGRESQL_PASSWORD=custompassword
+      - POSTGRESQL_DATABASE=customdatabase
+      - POSTGRESQL_NUM_SYNCHRONOUS_REPLICAS=1
+      - POSTGRESQL_MAX_CONNECTIONS=1550
+      - POSTGRESQL_TIMEZONE=Europe/Istanbul
+      - POSTGRESQL_LOG_TIMEZONE=Europe/Istanbul
+      - POSTGRESQL_LANG=tr_TR.utf8
+      - POSTGRESQL_LANGUAGE=tr_TR
+      - POSTGRESQL_LC_ALL=tr_TR.UTF-8      
+      - REPMGR_PRIMARY_HOST=pg-0
+      - REPMGR_PARTNER_NODES=pg-1,pg-0
+      - REPMGR_NODE_NAME=pg-0
+      - REPMGR_NODE_NETWORK_NAME=pg-0
+      - REPMGR_USERNAME=repmgr
+      - REPMGR_PASSWORD=repmgrpassword
+      - LANG=tr_TR.utf8
+      - LANGUAGE=tr_TR
+      - LC_ALL=tr_TR.UTF-8
+      - TZ=Europe/Istanbul
+    networks:
+      - backenddb-network
+    tty: true
+    stdin_open: true
+##################
+# Postgre Slave #
+##################    
+  pg-1:
+    image: docker.io/bitnami/postgresql-repmgr:latest
+    container_name: pg-1
+    restart: always
+    ports:
+      - 35434:5432
+    volumes:
+      - pg_1_data:/bitnami/postgresql
+    environment:
+      - POSTGRESQL_POSTGRES_PASSWORD=adminpassword
+      - POSTGRESQL_USERNAME=customuser
+      - POSTGRESQL_PASSWORD=custompassword
+      - POSTGRESQL_DATABASE=customdatabase
+      - POSTGRESQL_NUM_SYNCHRONOUS_REPLICAS=1
+      - POSTGRESQL_MAX_CONNECTIONS=1550
+      - POSTGRESQL_TIMEZONE=Europe/Istanbul
+      - POSTGRESQL_LOG_TIMEZONE=Europe/Istanbul
+      - POSTGRESQL_LANG=tr_TR.utf8
+      - POSTGRESQL_LANGUAGE=tr_TR
+      - POSTGRESQL_LC_ALL=tr_TR.UTF-8
+      - REPMGR_PRIMARY_HOST=pg-0
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
+      - REPMGR_NODE_NAME=pg-1
+      - REPMGR_NODE_NETWORK_NAME=pg-1
+      - REPMGR_USERNAME=repmgr
+      - REPMGR_PASSWORD=repmgrpassword
+      - LANG=tr_TR.utf8
+      - LANGUAGE=tr_TR
+      - LC_ALL=tr_TR.UTF-8
+      - TZ=Europe/Istanbul
+    networks:
+      - backenddb-network
+    tty: true
+    stdin_open: true
+##################
+# PGPOOL Tool #
+##################    
+  pgpool:
+    image: docker.io/bitnami/pgpool:latest
+    container_name: pgpool
+    restart: always
+    ports:
+      - 35432:5432
+    environment:
+      - PGPOOL_BACKEND_NODES=0:pg-0:5432,1:pg-1:5432
+      - PGPOOL_SR_CHECK_USER=repmgr
+      - PGPOOL_SR_CHECK_PASSWORD=repmgrpassword
+      - PGPOOL_ENABLE_LDAP=no
+      - PGPOOL_POSTGRES_USERNAME=postgres
+      - PGPOOL_POSTGRES_PASSWORD=adminpassword
+      - PGPOOL_ADMIN_USERNAME=admin
+      - PGPOOL_ADMIN_PASSWORD=adminpassword
+      - PGPOOL_ENABLE_LOAD_BALANCING=yes
+      - PGPOOL_ENABLE_STATEMENT_LOAD_BALANCING=yes
+      - PGPOOL_MAX_POOL=15
+      - PGPOOL_NUM_INIT_CHILDREN=96
+      - PGPOOL_RESERVED_CONNECTIONS=0
+      - PGPOOL_CONNECTION_LIFE_TIME=6000
+      - PGPOOL_POSTGRES_CUSTOM_USERS=customuser,kong,keycloak,owncloud,robotika
+      - PGPOOL_POSTGRES_CUSTOM_PASSWORDS=custompassword,kingkong,keycloak,owncloud,zdLy2wZMCf
+      - TZ=Europe/Istanbul
+    healthcheck:
+      test: ["CMD", "/opt/bitnami/scripts/pgpool/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      backend-network:
+        aliases:
+          - pgpool
+      backenddb-network:
+        aliases:
+          - pgpool
+    tty: true
+    stdin_open: true
+    
+volumes:
+  pg_0_data:
+    external: true
+  pg_1_data:
+    external: true
+
+
+networks:
+  backend-network:
+    name: backend
+    external: true
+  backenddb-network:
+    name: backenddb
+    external: true
