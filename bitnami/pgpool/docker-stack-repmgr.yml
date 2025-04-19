@@ -1,4 +1,4 @@
-version: '3.8'
+
 services:
 ##################
 # Postgre Master #
@@ -8,9 +8,6 @@ services:
     hostname: pg-0
     deploy:
       mode: global
-      placement:
-        constraints:
-          - node.labels.pg-0 == true
       restart_policy:
         condition: any
         delay: 5s
@@ -47,6 +44,8 @@ services:
       - LANGUAGE=tr_TR
       - LC_ALL=tr_TR.UTF-8
       - TZ=Europe/Istanbul
+    tty: true
+    stdin_open: true
     networks:
       - kong-net
 
@@ -58,13 +57,10 @@ services:
     hostname: pg-1
     deploy:
       mode: global
-      placement:
-        constraints:
-          - node.labels.pg-1 == true
       restart_policy:
         condition: any
-        delay: 5s
-        max_attempts: 3
+        delay: 10s
+        max_attempts: 5
     ports:
       - target: 5432
         published: 35434
@@ -97,6 +93,8 @@ services:
       - LANGUAGE=tr_TR
       - LC_ALL=tr_TR.UTF-8
       - TZ=Europe/Istanbul
+    tty: true
+    stdin_open: true
     networks:
       - kong-net
 
@@ -108,13 +106,10 @@ services:
     hostname: pgpool
     deploy:
       mode: global
-      placement:
-        constraints:
-          - node.labels.pgpool == true
       restart_policy:
         condition: any
-        delay: 5s
-        max_attempts: 3
+        delay: 15s
+        max_attempts: 8
     ports:
       - target: 5432
         published: 35432
@@ -137,6 +132,8 @@ services:
       - PGPOOL_POSTGRES_CUSTOM_USERS=customuser,kong,keycloak,owncloud,robotika
       - PGPOOL_POSTGRES_CUSTOM_PASSWORDS=custompassword,kingkong,keycloak,owncloud,zdLy2wZMCf
       - TZ=Europe/Istanbul
+    tty: true
+    stdin_open: true
     networks:
       - kong-net
 
