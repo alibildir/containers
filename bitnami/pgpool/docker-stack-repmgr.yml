@@ -129,8 +129,8 @@ services:
       - PGPOOL_NUM_INIT_CHILDREN=96
       - PGPOOL_RESERVED_CONNECTIONS=0
       - PGPOOL_CONNECTION_LIFE_TIME=6000
-      - PGPOOL_POSTGRES_CUSTOM_USERS=customuser,kong,keycloak,owncloud,robotika
-      - PGPOOL_POSTGRES_CUSTOM_PASSWORDS=custompassword,kingkong,keycloak,owncloud,zdLy2wZMCf
+      - PGPOOL_POSTGRES_CUSTOM_USERS=customuser,kong,keycloak,owncloud,robotika,metabaseuser
+      - PGPOOL_POSTGRES_CUSTOM_PASSWORDS=custompassword,kingkong,keycloak,owncloud,zdLy2wZMCf,metabasepassword
       - TZ=Europe/Istanbul
     tty: true
     stdin_open: true
